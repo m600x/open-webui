@@ -100,6 +100,7 @@
 
 	import CommandSuggestionList from './MessageInput/CommandSuggestionList.svelte';
 	import Knobs from '../icons/Knobs.svelte';
+	import Brain from '../icons/Brain.svelte';
 	import ValvesModal from '../workspace/common/ValvesModal.svelte';
 	import Note from '../icons/Note.svelte';
 	import { goto } from '$app/navigation';
@@ -157,6 +158,13 @@
 	export let imageGenerationEnabled = false;
 	export let webSearchEnabled = false;
 	export let codeInterpreterEnabled = false;
+	// Reasoning effort sent as reasoning_effort: null = default (omit),
+	// or one of 'off' | 'low' | 'medium' | 'high'.
+	export let thinkingEffort: string | null = null;
+
+	// Anthropic adaptive-thinking effort ladder (+ off).
+	const thinkingEffortOptions = ['off', 'low', 'medium', 'high', 'xhigh', 'max'];
+	let showThinkingMenu = false;
 
 	export let pendingOAuthTools = [];
 
@@ -203,7 +211,8 @@
 		selectedFilterIds,
 		imageGenerationEnabled,
 		webSearchEnabled,
-		codeInterpreterEnabled
+		codeInterpreterEnabled,
+		thinkingEffort
 	});
 
 	const inputVariableHandler = async (text: string): Promise<string> => {
@@ -1971,14 +1980,14 @@
 										</button>
 									</InputMenu>
 
-									{#if showWebSearchButton || showImageGenerationButton || showCodeInterpreterButton || showToolsButton || showSkillsButton || (toggleFilters && toggleFilters.length > 0)}
+									{#if true || showWebSearchButton || showImageGenerationButton || showCodeInterpreterButton || showToolsButton || showSkillsButton || (toggleFilters && toggleFilters.length > 0)}
 										<div
 											class="flex self-center w-[1px] h-4 mx-1 bg-gray-200/50 dark:bg-gray-800/50 shrink-0"
 										/>
 									{/if}
 
 									<div class="flex flex-1 items-center min-w-0 overflow-x-auto scrollbar-none">
-										{#if showWebSearchButton || showImageGenerationButton || showCodeInterpreterButton || showToolsButton || showSkillsButton || (toggleFilters && toggleFilters.length > 0)}
+										{#if true || showWebSearchButton || showImageGenerationButton || showCodeInterpreterButton || showToolsButton || showSkillsButton || (toggleFilters && toggleFilters.length > 0)}
 											<IntegrationsMenu
 												selectedModels={selectedModelIds}
 												{toggleFilters}
@@ -2289,6 +2298,79 @@
 										</div>
 									{:else}
 										{#if !history?.currentId || history.messages[history.currentId]?.done == true}
+											<!-- Reasoning effort selector -->
+											<div class="flex items-center">
+												<Dropdown bind:show={showThinkingMenu} align="end">
+													<Tooltip
+														content={thinkingEffort === null
+															? $i18n.t('Reasoning Effort')
+															: $i18n.t('Reasoning Effort') + ': ' + thinkingEffort}
+														placement="top"
+													>
+														<button
+															type="button"
+															id="thinking-effort-button"
+															class="flex items-center gap-1 p-1.5 self-center text-sm transition rounded-full cursor-pointer {thinkingEffort ===
+															null
+																? 'text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200'
+																: thinkingEffort === 'off'
+																	? 'text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400'
+																	: 'text-purple-500 dark:text-purple-300 hover:text-purple-600 dark:hover:text-purple-200'}"
+														>
+															<Brain className="size-4.5" strokeWidth="1.75" />
+															{#if thinkingEffort !== null && thinkingEffort !== 'off'}
+																<span class="text-[11px] font-medium capitalize"
+																	>{thinkingEffort}</span
+																>
+															{/if}
+														</button>
+													</Tooltip>
+
+													<div slot="content">
+														<div
+															class="min-w-40 rounded-2xl px-1 py-1 border border-gray-100 dark:border-gray-800 z-50 bg-white dark:bg-gray-850 dark:text-white shadow-lg"
+														>
+															<button
+																type="button"
+																class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl {thinkingEffort ===
+																null
+																	? 'bg-gray-50 dark:bg-gray-800/50'
+																	: 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}"
+																on:click={() => {
+																	thinkingEffort = null;
+																	showThinkingMenu = false;
+																}}
+															>
+																<span>{$i18n.t('Default')}</span>
+															</button>
+															{#each thinkingEffortOptions as effort}
+																<button
+																	type="button"
+																	class="flex w-full justify-between gap-2 items-center px-3 py-1.5 text-sm cursor-pointer rounded-xl {thinkingEffort ===
+																	effort
+																		? 'bg-gray-50 dark:bg-gray-800/50'
+																		: 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}"
+																	on:click={() => {
+																		thinkingEffort = effort;
+																		showThinkingMenu = false;
+																	}}
+																>
+																	<span class="capitalize">{$i18n.t(effort)}</span>
+																	{#if effort !== 'off'}
+																		<Brain
+																			className="size-3.5 shrink-0 {thinkingEffort === effort
+																				? 'text-purple-500 dark:text-purple-300'
+																				: 'text-gray-300 dark:text-gray-600'}"
+																			strokeWidth="2"
+																		/>
+																	{/if}
+																</button>
+															{/each}
+														</div>
+													</div>
+												</Dropdown>
+											</div>
+
 											{#if $_user?.role === 'admin' || ($_user?.permissions?.chat?.stt ?? true)}
 												<!-- {$i18n.t('Record voice')} -->
 												<Tooltip content={$i18n.t('Dictate')}>
