@@ -149,7 +149,6 @@
 		(taskIds && taskIds.length > 0) ||
 		(history.currentId && history.messages[history.currentId]?.done != true) ||
 		generating;
-	$: canCompact = !!history?.currentId;
 
 	export let prompt = '';
 	export let files = [];
