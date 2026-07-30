@@ -44,8 +44,7 @@
 		CONTEXT_COMPACTION_MODEL: '',
 		ENABLE_CONTEXT_COMPACTION: false,
 		CONTEXT_COMPACTION_TOKEN_THRESHOLD: 80000,
-		CONTEXT_COMPACTION_TOKEN_CAP: 80000,
-		CONTEXT_COMPACTION_RETENTION_PERCENTAGE: 40,
+		CONTEXT_COMPACTION_WINDOW_PERCENT: 80,
 		CONTEXT_COMPACTION_PROMPT_TEMPLATE: ''
 	};
 
@@ -248,6 +247,22 @@
 					</AdminSettingField>
 
 					<AdminSettingField
+						label={$i18n.t('Context Window Percent')}
+						description={$i18n.t(
+							'Compaction triggers when usage exceeds this percentage of the model’s advertised context window. The token threshold below is the fallback for models without one.'
+						)}
+					>
+						<input
+							type="number"
+							min="1"
+							max="100"
+							step="1"
+							class={inputClass}
+							bind:value={chatConfig.CONTEXT_COMPACTION_WINDOW_PERCENT}
+						/>
+					</AdminSettingField>
+
+					<AdminSettingField
 						label={$i18n.t('Token Threshold')}
 						description={$i18n.t(
 							'Older messages are summarized when estimated context exceeds this token limit.'
@@ -259,37 +274,6 @@
 							step="1"
 							class={inputClass}
 							bind:value={chatConfig.CONTEXT_COMPACTION_TOKEN_THRESHOLD}
-						/>
-					</AdminSettingField>
-
-					<AdminSettingField
-						label={$i18n.t('Token Cap')}
-						description={$i18n.t(
-							'Model-specific context compaction thresholds cannot exceed this token limit.'
-						)}
-					>
-						<input
-							type="number"
-							min="1"
-							step="1"
-							class={inputClass}
-							bind:value={chatConfig.CONTEXT_COMPACTION_TOKEN_CAP}
-						/>
-					</AdminSettingField>
-
-					<AdminSettingField
-						label={$i18n.t('Retained Messages')}
-						description={$i18n.t(
-							'Percentage of recent messages to keep after older messages are summarized.'
-						)}
-					>
-						<input
-							type="number"
-							min="10"
-							max="50"
-							step="1"
-							class={inputClass}
-							bind:value={chatConfig.CONTEXT_COMPACTION_RETENTION_PERCENTAGE}
 						/>
 					</AdminSettingField>
 

@@ -56,8 +56,7 @@ CHAT_CONFIG_KEYS = {
     'CONTEXT_COMPACTION_MODEL': 'chat.context_compaction.model',
     'ENABLE_CONTEXT_COMPACTION': 'chat.context_compaction.enable',
     'CONTEXT_COMPACTION_TOKEN_THRESHOLD': 'chat.context_compaction.token_threshold',
-    'CONTEXT_COMPACTION_TOKEN_CAP': 'chat.context_compaction.token_cap',
-    'CONTEXT_COMPACTION_RETENTION_PERCENTAGE': 'chat.context_compaction.retention_percentage',
+    'CONTEXT_COMPACTION_WINDOW_PERCENT': 'chat.context_compaction.window_percent',
     'CONTEXT_COMPACTION_PROMPT_TEMPLATE': 'chat.context_compaction.prompt_template',
 }
 
@@ -138,8 +137,10 @@ class ChatConfigForm(BaseModel):
     CONTEXT_COMPACTION_MODEL: str | None = ''
     ENABLE_CONTEXT_COMPACTION: bool
     CONTEXT_COMPACTION_TOKEN_THRESHOLD: int
-    CONTEXT_COMPACTION_TOKEN_CAP: int | None = None
-    CONTEXT_COMPACTION_RETENTION_PERCENTAGE: int = 40
+    # Percentage of the model's advertised context_window that triggers
+    # compaction; the absolute token threshold is the fallback for models
+    # that don't advertise a window.
+    CONTEXT_COMPACTION_WINDOW_PERCENT: int = 80
     CONTEXT_COMPACTION_PROMPT_TEMPLATE: str
 
 
@@ -189,10 +190,6 @@ async def get_chat_config_values() -> dict:
     config = {field: values[storage_key] for field, storage_key in CHAT_CONFIG_KEYS.items() if storage_key in values}
     if config.get('CONTEXT_COMPACTION_MODEL') is None:
         config['CONTEXT_COMPACTION_MODEL'] = ''
-    if config.get('CONTEXT_COMPACTION_TOKEN_CAP') is None:
-        config['CONTEXT_COMPACTION_TOKEN_CAP'] = config.get('CONTEXT_COMPACTION_TOKEN_THRESHOLD', 80000)
-    if config.get('CONTEXT_COMPACTION_RETENTION_PERCENTAGE') is None:
-        config['CONTEXT_COMPACTION_RETENTION_PERCENTAGE'] = 40
     return config
 
 
@@ -822,16 +819,12 @@ async def get_chat_config(user=Depends(get_admin_user)):
 @router.post('/config', response_model=ChatConfigForm)
 async def set_chat_config(form_data: ChatConfigForm, user=Depends(get_admin_user)):
     threshold = max(1, int(form_data.CONTEXT_COMPACTION_TOKEN_THRESHOLD))
-    token_cap = max(1, int(form_data.CONTEXT_COMPACTION_TOKEN_CAP or threshold))
-    retention_percentage = min(50, max(10, int(form_data.CONTEXT_COMPACTION_RETENTION_PERCENTAGE)))
     await Config.upsert(
         chat_config_updates(
             {
                 **form_data.model_dump(),
                 'CONTEXT_COMPACTION_MODEL': form_data.CONTEXT_COMPACTION_MODEL or '',
                 'CONTEXT_COMPACTION_TOKEN_THRESHOLD': threshold,
-                'CONTEXT_COMPACTION_TOKEN_CAP': token_cap,
-                'CONTEXT_COMPACTION_RETENTION_PERCENTAGE': retention_percentage,
             }
         )
     )
@@ -1285,7 +1278,7 @@ async def compact_chat_by_id(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='No model found for context compaction.')
 
     result = await compact_chat_branch(request, user, chat, model_id, request.app.state.MODELS)
-    result['context_usage'] = await get_chat_context_usage(chat, model_id)
+    result['context_usage'] = await get_chat_context_usage(chat, model_id, request.app.state.MODELS)
     if result.get('compacted'):
         await publish_event(
             request,
@@ -1303,7 +1296,9 @@ async def compact_chat_by_id(
 
 
 @router.get('/{id}', response_model=ChatResponse | None)
-async def get_chat_by_id(id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)):
+async def get_chat_by_id(
+    request: Request, id: str, user=Depends(get_verified_user), db: AsyncSession = Depends(get_async_session)
+):
     chat = await Chats.get_chat_by_id_and_user_id(id, user.id, db=db)
 
     if not chat and user.role == 'admin':
@@ -1334,7 +1329,7 @@ async def get_chat_by_id(id: str, user=Depends(get_verified_user), db: AsyncSess
 
     if chat:
         data = ChatResponse.model_validate(chat, from_attributes=True).model_dump()
-        data['context_usage'] = await get_chat_context_usage(chat)
+        data['context_usage'] = await get_chat_context_usage(chat, models=request.app.state.MODELS)
         return data
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=ERROR_MESSAGES.NOT_FOUND)

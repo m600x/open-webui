@@ -1,4 +1,4 @@
-# Open WebUI fork with reasoning selector
+# Open WebUI fork with several tweak
 
 Changes from the upstream [open-webui/open-webui](https://github.com/open-webui/open-webui) repo:
 
@@ -8,11 +8,12 @@ Changes from the upstream [open-webui/open-webui](https://github.com/open-webui/
 - When combined with [AI Subscription Gateway](https://github.com/m600x/ai-subscription-gateway/):
   - Cost calculation per message and per chat session
   - Auto discovery of reasoning effort
+  - Context window indication and auto/manual compaction
 
 - CI trimmed: upstream release/PyPI workflows dropped; multi-arch Docker image published to `ghcr.io/m600x/open-webui` on push
 
-![Open WebUI Reasoning Effort](https://i.imgur.com/fXllDwm.png)
-![Open WebUI Cost](https://i.imgur.com/Oz1nP2f.png)
+![Open WebUI Reasoning Effort](https://i.imgur.com/QqsV1fu.png)
+![Open WebUI Cost](https://i.imgur.com/A9r3v52.png)
 
 ---
 
