@@ -327,7 +327,6 @@ async def _load_config() -> dict:
         'chat.context_compaction.window_percent',
         'chat.context_compaction.prompt_template',
     )
-    token_threshold = _parse_positive_int(values.get('chat.context_compaction.token_threshold')) or 80000
     return {
         'enable': bool(values.get('chat.context_compaction.enable', False)),
         'token_threshold': int(values.get('chat.context_compaction.token_threshold', 80000) or 80000),
@@ -372,6 +371,11 @@ def _resolve_token_threshold(config: dict, metadata: dict, model: dict | None) -
         global_threshold = max(1, window * config['window_percent'] // 100)
     else:
         global_threshold = config['token_threshold']
+
+    configured_threshold = _parse_positive_int((metadata.get('params') or {}).get('compact_token_threshold'))
+    if configured_threshold is None:
+        return global_threshold
+    return min(configured_threshold, global_threshold)
 
 
 async def get_chat_context_usage(chat: Any, model_id: str | None = None, models: dict | None = None) -> dict | None:
