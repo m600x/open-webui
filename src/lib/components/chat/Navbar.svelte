@@ -8,12 +8,15 @@
 		chatId,
 		config,
 		mobile,
+		models,
 		settings,
 		showControls,
 		showSidebar,
 		temporaryChatEnabled,
 		user
 	} from '$lib/stores';
+
+	import { computeSessionCost, formatCost } from '$lib/utils';
 
 	import { slide } from 'svelte/transition';
 	import { page } from '$app/stores';
@@ -52,6 +55,10 @@
 	export let archiveChatHandler: (id: string) => void;
 	export let deleteChatHandler: (id: string) => void;
 	export let moveChatHandler: (id: string, folderId: string) => void;
+
+	// Estimated cost of everything generated in this chat (all branches,
+	// including regenerations), at current model pricing.
+	$: sessionCost = computeSessionCost(history?.messages ?? {}, $models);
 
 	let closedBannerIds = [];
 
@@ -160,6 +167,23 @@
 						</div>
 					{/if}
 				</div>
+
+				{#if sessionCost.cost != null && sessionCost.cost > 0}
+					<div class="hidden sm:flex self-center px-1">
+						<Tooltip
+							content={`${sessionCost.pricedCount} ${$i18n.t('responses')}${
+								sessionCost.unpricedCount > 0
+									? ` · ${sessionCost.unpricedCount} ${$i18n.t('without pricing')}`
+									: ''
+							}`}
+							placement="bottom"
+						>
+							<div class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+								~{formatCost(sessionCost.cost, sessionCost.currency)}
+							</div>
+						</Tooltip>
+					</div>
+				{/if}
 
 				<div class="mr-1 flex flex-none items-center gap-2 self-center">
 					<!-- <div class="md:hidden flex self-center w-[1px] h-5 mx-2 bg-gray-300 dark:bg-stone-700" /> -->
