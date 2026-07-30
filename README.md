@@ -4,16 +4,23 @@ Changes from the upstream [open-webui/open-webui](https://github.com/open-webui/
 
 - Reasoning effort selector (none, low, medium, high, xhigh, max)
 - Reasoning effort default value per model
-
 - When combined with [AI Subscription Gateway](https://github.com/m600x/ai-subscription-gateway/):
   - Cost calculation per message and per chat session
   - Auto discovery of reasoning effort
   - Context window indication and auto/manual compaction
+  - Analytics on steroids
+- CI trimmed: upstream release/PyPI workflows dropped.
 
-- CI trimmed: upstream release/PyPI workflows dropped; multi-arch Docker image published to `ghcr.io/m600x/open-webui` on push
+Image available at
+```
+ghcr.io/m600x/open-webui:latest
+```
 
 ![Open WebUI Reasoning Effort](https://i.imgur.com/QqsV1fu.png)
 ![Open WebUI Cost](https://i.imgur.com/A9r3v52.png)
+![Open WebUI Analytics](https://i.imgur.com/NGP2YIr.png)
+
+
 
 ---
 
