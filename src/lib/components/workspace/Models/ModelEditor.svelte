@@ -777,48 +777,48 @@
 							</div>
 
 							<div class="space-y-2.5">
-							{#if editorEffortOptions.length > 0 || params?.reasoning_effort}
-								<div class="my-1 flex w-full justify-between items-center">
-									<Tooltip
-										content={$i18n.t(
-											'Default reasoning effort for this model. Shown in the chat input selector and used unless overridden per message.'
-										)}
-										placement="top-start"
-										className="inline-tooltip"
-									>
-										<div class=" self-center text-xs font-medium">
-											{$i18n.t('Reasoning Effort')}
-										</div>
-									</Tooltip>
-
-									<select
-										class="w-fit pr-8 rounded-sm py-1 px-2 text-xs bg-transparent text-right outline-hidden"
-										value={params?.reasoning_effort ?? ''}
-										on:change={(e) => {
-											const v = e.currentTarget.value;
-											params.reasoning_effort = v === '' ? null : v;
-										}}
-									>
-										<option value=""
-											>{$i18n.t('Default')}{modelReasoningInfo.default
-												? ` (${modelReasoningInfo.default})`
-												: ''}</option
+								{#if editorEffortOptions.length > 0 || params?.reasoning_effort}
+									<div class="my-1 flex w-full justify-between items-center">
+										<Tooltip
+											content={$i18n.t(
+												'Default reasoning effort for this model. Shown in the chat input selector and used unless overridden per message.'
+											)}
+											placement="top-start"
+											className="inline-tooltip"
 										>
-										{#if params?.reasoning_effort && !editorEffortOptions.includes(params.reasoning_effort)}
-											<option value={params.reasoning_effort}
-												>{params.reasoning_effort} ({$i18n.t('unavailable')})</option
-											>
-										{/if}
-										{#each editorEffortOptions as effort}
-											<option value={effort}
-												>{effort}{effort === modelReasoningInfo.default
-													? ` (${$i18n.t('default')})`
+											<div class=" self-center text-xs font-medium">
+												{$i18n.t('Reasoning Effort')}
+											</div>
+										</Tooltip>
+
+										<select
+											class="w-fit pr-8 rounded-sm py-1 px-2 text-xs bg-transparent text-right outline-hidden"
+											value={params?.reasoning_effort ?? ''}
+											on:change={(e) => {
+												const v = e.currentTarget.value;
+												params.reasoning_effort = v === '' ? null : v;
+											}}
+										>
+											<option value=""
+												>{$i18n.t('Default')}{modelReasoningInfo.default
+													? ` (${modelReasoningInfo.default})`
 													: ''}</option
 											>
-										{/each}
-									</select>
-								</div>
-							{/if}
+											{#if params?.reasoning_effort && !editorEffortOptions.includes(params.reasoning_effort)}
+												<option value={params.reasoning_effort}
+													>{params.reasoning_effort} ({$i18n.t('unavailable')})</option
+												>
+											{/if}
+											{#each editorEffortOptions as effort}
+												<option value={effort}
+													>{effort}{effort === modelReasoningInfo.default
+														? ` (${$i18n.t('default')})`
+														: ''}</option
+												>
+											{/each}
+										</select>
+									</div>
+								{/if}
 
 								<div>
 									<div class="mb-1 text-xs text-gray-600 dark:text-gray-400">

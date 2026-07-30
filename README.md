@@ -12,6 +12,7 @@ Changes from the upstream [open-webui/open-webui](https://github.com/open-webui/
 - CI trimmed: upstream release/PyPI workflows dropped.
 
 Image available at
+
 ```
 ghcr.io/m600x/open-webui:latest
 ```
@@ -19,8 +20,6 @@ ghcr.io/m600x/open-webui:latest
 ![Open WebUI Reasoning Effort](https://i.imgur.com/QqsV1fu.png)
 ![Open WebUI Cost](https://i.imgur.com/A9r3v52.png)
 ![Open WebUI Analytics](https://i.imgur.com/NGP2YIr.png)
-
-
 
 ---
 

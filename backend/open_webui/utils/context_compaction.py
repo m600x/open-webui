@@ -362,6 +362,7 @@ def _clamp_retention_percentage(value: Any) -> int:
         parsed = 40
     return min(50, max(10, parsed))
 
+
 def _resolve_token_threshold(config: dict, metadata: dict, model: dict | None) -> int:
     """Effective compaction threshold in tokens: a percentage of the model's
     advertised context_window when known, else the absolute token_threshold
@@ -371,7 +372,6 @@ def _resolve_token_threshold(config: dict, metadata: dict, model: dict | None) -
         global_threshold = max(1, window * config['window_percent'] // 100)
     else:
         global_threshold = config['token_threshold']
-
 
 
 async def get_chat_context_usage(chat: Any, model_id: str | None = None, models: dict | None = None) -> dict | None:
