@@ -22,6 +22,7 @@
 	import ActionsSelector from '$lib/components/workspace/Models/ActionsSelector.svelte';
 	import Capabilities from '$lib/components/workspace/Models/Capabilities.svelte';
 	import Textarea from '$lib/components/common/Textarea.svelte';
+	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import AccessControl from '../common/AccessControl.svelte';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import ChevronLeft from '$lib/components/icons/ChevronLeft.svelte';
@@ -761,6 +762,34 @@
 							</div>
 
 							<div class="space-y-2.5">
+							<div class="my-1 flex w-full justify-between items-center">
+								<Tooltip
+									content={$i18n.t(
+										'Default reasoning effort for this model. Shown in the chat input selector and used unless overridden per message.'
+									)}
+									placement="top-start"
+									className="inline-tooltip"
+								>
+									<div class=" self-center text-xs font-medium">
+										{$i18n.t('Reasoning Effort')}
+									</div>
+								</Tooltip>
+
+								<select
+									class="w-fit pr-8 rounded-sm py-1 px-2 text-xs bg-transparent text-right outline-hidden"
+									value={params?.reasoning_effort ?? ''}
+									on:change={(e) => {
+										const v = e.currentTarget.value;
+										params.reasoning_effort = v === '' ? null : v;
+									}}
+								>
+									<option value="">{$i18n.t('Default')}</option>
+									{#each ['off', 'low', 'medium', 'high', 'xhigh', 'max'] as effort}
+										<option value={effort}>{effort}</option>
+									{/each}
+								</select>
+							</div>
+
 								<div>
 									<div class="mb-1 text-xs text-gray-600 dark:text-gray-400">
 										{$i18n.t('System Prompt')}
