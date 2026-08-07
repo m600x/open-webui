@@ -17,6 +17,7 @@
 	import UserStatusModal from './UserStatusModal.svelte';
 	import Emoji from '$lib/components/common/Emoji.svelte';
 	import CalendarIcon from './icons/Calendar.svelte';
+	import ChartBarIcon from './icons/ChartBar.svelte';
 	import ClockIcon from './icons/Clock.svelte';
 	import CodeIcon from './icons/Code.svelte';
 	import EmojiFaceIcon from './icons/EmojiFace.svelte';
@@ -544,6 +545,31 @@
 					</div>
 					<div class=" self-center truncate">{$i18n.t('Admin Panel')}</div>
 				</a>
+
+				{#if $config?.features?.enable_admin_analytics ?? true}
+					<a
+						href="/admin/analytics"
+						draggable="false"
+						class="flex h-[1.6875rem] items-center gap-2 rounded-xl px-2 text-[13px] w-full hover:bg-gray-50/40 dark:hover:bg-gray-800/40 transition cursor-pointer select-none"
+						on:click={async (e) => {
+							if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) {
+								return;
+							}
+							e.preventDefault();
+							show = false;
+							await showSettings.set('admin:analytics');
+							if ($mobile) {
+								await tick();
+								showSidebar.set(false);
+							}
+						}}
+					>
+						<div class="self-center">
+							<ChartBarIcon className="size-3.5" strokeWidth="1.5" />
+						</div>
+						<div class=" self-center truncate">{$i18n.t('Analytics')}</div>
+					</a>
+				{/if}
 			{/if}
 
 			<button
